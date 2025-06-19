@@ -1,49 +1,35 @@
 // API 호출 함수들
 export interface EventRequest {
   title: string
-  subtitle?: string
-  description: string
   venue: string
+  description: string
+  posterImageUrl?: string
   startDate: string
   endDate: string
-  runtime: string
-  ageLimit: string
-  category: string
-  price: {
-    vip?: string
-    r?: string
-    s?: string
-    a?: string
-  }
-  poster?: string
   schedule?: {
     showDate: string
     showTime: string
   }
+  eventCategory: string
+  runtime: number
+  ageLimit: number
 }
 
 export interface EventResponse {
   id: number
   title: string
-  subtitle?: string
-  description: string
   venue: string
+  description: string
+  posterImageUrl?: string
   startDate: string
   endDate: string
-  runtime: string
-  ageLimit: string
-  category: string
-  price: {
-    vip?: string
-    r?: string
-    s?: string
-    a?: string
-  }
-  poster?: string
   schedule?: {
     showDate: string
     showTime: string
   }
+  eventCategory: string
+  runtime: number
+  ageLimit: number
   rating?: number
   reviewCount?: number
   createdAt?: string
@@ -79,6 +65,9 @@ async function apiCall<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`
 
   console.log(`🌐 API 요청: ${options?.method || "GET"} ${url}`)
+  if (options?.body) {
+    console.log(`📤 요청 데이터:`, JSON.parse(options.body as string))
+  }
 
   try {
     const response = await fetch(url, {

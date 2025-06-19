@@ -35,36 +35,32 @@ import {
 } from "@/lib/api/events"
 import { fallbackEvents } from "@/lib/data/fallback-events"
 
-interface EventFormData extends Omit<EventRequest, "price"> {
-  price: {
-    vip: string
-    r: string
-    s: string
-    a: string
-  }
+interface EventFormData {
+  title: string
+  venue: string
+  description: string
+  posterImageUrl: string
+  startDate: string
+  endDate: string
   showDate: string
   showTime: string
+  eventCategory: string
+  runtime: string
+  ageLimit: string
 }
 
 const initialFormData: EventFormData = {
   title: "",
-  subtitle: "",
-  description: "",
   venue: "",
+  description: "",
+  posterImageUrl: "",
   startDate: "",
   endDate: "",
-  runtime: "",
-  ageLimit: "",
-  category: "",
-  price: {
-    vip: "",
-    r: "",
-    s: "",
-    a: "",
-  },
-  poster: "",
   showDate: "",
   showTime: "",
+  eventCategory: "",
+  runtime: "",
+  ageLimit: "",
 }
 
 export default function AdminPage() {
@@ -121,16 +117,6 @@ export default function AdminPage() {
     }))
   }
 
-  const handlePriceChange = (priceType: keyof EventFormData["price"], value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      price: {
-        ...prev.price,
-        [priceType]: value,
-      },
-    }))
-  }
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setFormLoading(true)
@@ -138,29 +124,24 @@ export default function AdminPage() {
     try {
       const eventData: EventRequest = {
         title: formData.title,
-        subtitle: formData.subtitle,
-        description: formData.description,
         venue: formData.venue,
+        description: formData.description,
+        posterImageUrl: formData.posterImageUrl || undefined,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        runtime: formData.runtime,
-        ageLimit: formData.ageLimit,
-        category: formData.category,
-        price: {
-          vip: formData.price.vip || undefined,
-          r: formData.price.r || undefined,
-          s: formData.price.s || undefined,
-          a: formData.price.a || undefined,
-        },
-        poster: formData.poster,
+        eventCategory: formData.eventCategory,
+        runtime: Number.parseInt(formData.runtime) || 0,
+        ageLimit: Number.parseInt(formData.ageLimit) || 0,
         schedule:
           formData.showDate && formData.showTime
             ? {
                 showDate: formData.showDate,
-                showTime: formData.showTime,
+                showTime: formData.showTime + ":00", // HH:MM:SS 형식으로 변환
               }
             : undefined,
       }
+
+      console.log("📤 전송할 데이터:", eventData)
 
       if (editingEvent) {
         console.log(`🔄 API 호출 시도: POST /api/v1/event/update/${editingEvent.id}`)
@@ -212,23 +193,16 @@ export default function AdminPage() {
     setEditingEvent(event)
     setFormData({
       title: event.title,
-      subtitle: event.subtitle || "",
-      description: event.description,
       venue: event.venue,
+      description: event.description,
+      posterImageUrl: event.posterImageUrl || "",
       startDate: event.startDate,
       endDate: event.endDate,
-      runtime: event.runtime,
-      ageLimit: event.ageLimit,
-      category: event.category,
-      price: {
-        vip: event.price?.vip || "",
-        r: event.price?.r || "",
-        s: event.price?.s || "",
-        a: event.price?.a || "",
-      },
-      poster: event.poster || "",
+      eventCategory: event.eventCategory,
+      runtime: event.runtime.toString(),
+      ageLimit: event.ageLimit.toString(),
       showDate: event.schedule?.showDate || "",
-      showTime: event.schedule?.showTime || "",
+      showTime: event.schedule?.showTime?.substring(0, 5) || "", // HH:MM:SS -> HH:MM
     })
     setIsDialogOpen(true)
   }
@@ -268,7 +242,7 @@ export default function AdminPage() {
     const matchesSearch =
       event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       event.venue.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesCategory = selectedCategory === "all" || event.category === selectedCategory
+    const matchesCategory = selectedCategory === "all" || event.eventCategory === selectedCategory
     return matchesSearch && matchesCategory
   })
 
@@ -339,10 +313,9 @@ export default function AdminPage() {
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
+                  <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="basic">기본 정보</TabsTrigger>
                     <TabsTrigger value="details">상세 정보</TabsTrigger>
-                    <TabsTrigger value="media">미디어</TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="basic" className="space-y-4">
@@ -357,11 +330,12 @@ export default function AdminPage() {
                         />
                       </div>
                       <div>
-                        <Label htmlFor="subtitle">부제목</Label>
+                        <Label htmlFor="venue">공연장 *</Label>
                         <Input
-                          id="subtitle"
-                          value={formData.subtitle}
-                          onChange={(e) => handleInputChange("subtitle", e.target.value)}
+                          id="venue"
+                          value={formData.venue}
+                          onChange={(e) => handleInputChange("venue", e.target.value)}
+                          required
                         />
                       </div>
                     </div>
@@ -379,19 +353,10 @@ export default function AdminPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="venue">공연장 *</Label>
-                        <Input
-                          id="venue"
-                          value={formData.venue}
-                          onChange={(e) => handleInputChange("venue", e.target.value)}
-                          required
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="category">카테고리 *</Label>
+                        <Label htmlFor="eventCategory">카테고리 *</Label>
                         <Select
-                          value={formData.category}
-                          onValueChange={(value) => handleInputChange("category", value)}
+                          value={formData.eventCategory}
+                          onValueChange={(value) => handleInputChange("eventCategory", value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="카테고리 선택" />
@@ -402,6 +367,15 @@ export default function AdminPage() {
                             <SelectItem value="PLAY">연극</SelectItem>
                           </SelectContent>
                         </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="posterImageUrl">포스터 이미지 URL</Label>
+                        <Input
+                          id="posterImageUrl"
+                          value={formData.posterImageUrl}
+                          onChange={(e) => handleInputChange("posterImageUrl", e.target.value)}
+                          placeholder="https://example.com/poster.jpg"
+                        />
                       </div>
                     </div>
 
@@ -432,12 +406,13 @@ export default function AdminPage() {
                   <TabsContent value="details" className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="runtime">공연시간 *</Label>
+                        <Label htmlFor="runtime">공연시간 (분) *</Label>
                         <Input
                           id="runtime"
+                          type="number"
                           value={formData.runtime}
                           onChange={(e) => handleInputChange("runtime", e.target.value)}
-                          placeholder="예: 150분"
+                          placeholder="예: 120"
                           required
                         />
                       </div>
@@ -445,9 +420,10 @@ export default function AdminPage() {
                         <Label htmlFor="ageLimit">관람연령 *</Label>
                         <Input
                           id="ageLimit"
+                          type="number"
                           value={formData.ageLimit}
                           onChange={(e) => handleInputChange("ageLimit", e.target.value)}
-                          placeholder="예: 8"
+                          placeholder="예: 8 (0은 전체관람가)"
                           required
                         />
                       </div>
@@ -476,65 +452,6 @@ export default function AdminPage() {
                           />
                         </div>
                       </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-base font-semibold">가격 정보</Label>
-                      <div className="grid grid-cols-2 gap-4 mt-2">
-                        <div>
-                          <Label htmlFor="vip-price">VIP석</Label>
-                          <Input
-                            id="vip-price"
-                            value={formData.price.vip}
-                            onChange={(e) => handlePriceChange("vip", e.target.value)}
-                            placeholder="예: 170000"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="r-price">R석</Label>
-                          <Input
-                            id="r-price"
-                            value={formData.price.r}
-                            onChange={(e) => handlePriceChange("r", e.target.value)}
-                            placeholder="예: 140000"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="s-price">S석</Label>
-                          <Input
-                            id="s-price"
-                            value={formData.price.s}
-                            onChange={(e) => handlePriceChange("s", e.target.value)}
-                            placeholder="예: 110000"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="a-price">A석</Label>
-                          <Input
-                            id="a-price"
-                            value={formData.price.a}
-                            onChange={(e) => handlePriceChange("a", e.target.value)}
-                            placeholder="예: 80000"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="media" className="space-y-4">
-                    <div>
-                      <Label htmlFor="poster">포스터 이미지 URL</Label>
-                      <Input
-                        id="poster"
-                        value={formData.poster}
-                        onChange={(e) => handleInputChange("poster", e.target.value)}
-                        placeholder="/images/poster1.png"
-                      />
-                    </div>
-
-                    <div className="text-sm text-gray-600">
-                      <p>* 미디어 파일은 현재 URL 입력만 지원됩니다.</p>
-                      <p>* 캐스트 정보와 스케줄은 추후 별도 관리 기능이 추가될 예정입니다.</p>
                     </div>
                   </TabsContent>
                 </Tabs>
@@ -660,7 +577,7 @@ export default function AdminPage() {
                     <div className="flex items-start space-x-6">
                       <div className="w-24 h-32 flex-shrink-0">
                         <Image
-                          src={event.poster || "/placeholder.svg"}
+                          src={event.posterImageUrl || "/placeholder.svg"}
                           alt={event.title}
                           width={96}
                           height={128}
@@ -673,13 +590,13 @@ export default function AdminPage() {
                             <div className="flex items-center gap-3 mb-2">
                               <h3 className="text-xl font-semibold text-gray-800">{event.title}</h3>
                               <Badge variant="secondary">
-                                {categoryLabels[event.category as keyof typeof categoryLabels] || event.category}
+                                {categoryLabels[event.eventCategory as keyof typeof categoryLabels] ||
+                                  event.eventCategory}
                               </Badge>
                               {!apiConnected && event.id > 1000000 && (
                                 <Badge className="bg-yellow-100 text-yellow-800 text-xs">로컬</Badge>
                               )}
                             </div>
-                            {event.subtitle && <p className="text-gray-600 mb-2">{event.subtitle}</p>}
                             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600 mb-3">
                               <div>
                                 <p>
@@ -691,10 +608,11 @@ export default function AdminPage() {
                               </div>
                               <div>
                                 <p>
-                                  <span className="font-medium">시간:</span> {event.runtime}
+                                  <span className="font-medium">시간:</span> {event.runtime}분
                                 </p>
                                 <p>
-                                  <span className="font-medium">연령:</span> {event.ageLimit}세 이상
+                                  <span className="font-medium">연령:</span>{" "}
+                                  {event.ageLimit === 0 ? "전체관람가" : `${event.ageLimit}세 이상`}
                                 </p>
                                 {event.schedule && (
                                   <p>
