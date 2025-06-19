@@ -42,7 +42,6 @@ interface EventFormData extends Omit<EventRequest, "price"> {
     s: string
     a: string
   }
-  // 단일 객체로 변경
   showDate: string
   showTime: string
 }
@@ -64,7 +63,6 @@ const initialFormData: EventFormData = {
     a: "",
   },
   poster: "",
-  // 단일 값으로 변경
   showDate: "",
   showTime: "",
 }
@@ -139,14 +137,22 @@ export default function AdminPage() {
 
     try {
       const eventData: EventRequest = {
-        ...formData,
+        title: formData.title,
+        subtitle: formData.subtitle,
+        description: formData.description,
+        venue: formData.venue,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        runtime: formData.runtime,
+        ageLimit: formData.ageLimit,
+        category: formData.category,
         price: {
           vip: formData.price.vip || undefined,
           r: formData.price.r || undefined,
           s: formData.price.s || undefined,
           a: formData.price.a || undefined,
         },
-        // 단일 schedule 객체로 변경
+        poster: formData.poster,
         schedule:
           formData.showDate && formData.showTime
             ? {
@@ -155,9 +161,6 @@ export default function AdminPage() {
               }
             : undefined,
       }
-      // showDate, showTime 제거
-      delete eventData.showDate
-      delete eventData.showTime
 
       if (editingEvent) {
         console.log(`🔄 API 호출 시도: POST /api/v1/event/update/${editingEvent.id}`)
@@ -218,13 +221,12 @@ export default function AdminPage() {
       ageLimit: event.ageLimit,
       category: event.category,
       price: {
-        vip: event.price.vip || "",
-        r: event.price.r || "",
-        s: event.price.s || "",
-        a: event.price.a || "",
+        vip: event.price?.vip || "",
+        r: event.price?.r || "",
+        s: event.price?.s || "",
+        a: event.price?.a || "",
       },
       poster: event.poster || "",
-      // 단일 값으로 변경
       showDate: event.schedule?.showDate || "",
       showTime: event.schedule?.showTime || "",
     })
@@ -270,7 +272,13 @@ export default function AdminPage() {
     return matchesSearch && matchesCategory
   })
 
-  const categories = ["all", "뮤지컬", "콘서트", "연극", "클래식", "전시", "스포츠", "아동/가족"]
+  const categories = ["all", "MUSICAL", "CONCERT", "PLAY"]
+  const categoryLabels = {
+    all: "모든 카테고리",
+    MUSICAL: "뮤지컬",
+    CONCERT: "콘서트",
+    PLAY: "연극",
+  }
 
   const getApiStatusBadge = () => {
     if (apiConnected === null) {
@@ -389,13 +397,9 @@ export default function AdminPage() {
                             <SelectValue placeholder="카테고리 선택" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="뮤지컬">뮤지컬</SelectItem>
-                            <SelectItem value="콘서트">콘서트</SelectItem>
-                            <SelectItem value="연극">연극</SelectItem>
-                            <SelectItem value="클래식">클래식</SelectItem>
-                            <SelectItem value="전시">전시</SelectItem>
-                            <SelectItem value="스포츠">스포츠</SelectItem>
-                            <SelectItem value="아동/가족">아동/가족</SelectItem>
+                            <SelectItem value="MUSICAL">뮤지컬</SelectItem>
+                            <SelectItem value="CONCERT">콘서트</SelectItem>
+                            <SelectItem value="PLAY">연극</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -433,7 +437,7 @@ export default function AdminPage() {
                           id="runtime"
                           value={formData.runtime}
                           onChange={(e) => handleInputChange("runtime", e.target.value)}
-                          placeholder="예: 150분 (인터미션 20분 포함)"
+                          placeholder="예: 150분"
                           required
                         />
                       </div>
@@ -443,13 +447,13 @@ export default function AdminPage() {
                           id="ageLimit"
                           value={formData.ageLimit}
                           onChange={(e) => handleInputChange("ageLimit", e.target.value)}
-                          placeholder="예: 8세 이상"
+                          placeholder="예: 8"
                           required
                         />
                       </div>
                     </div>
 
-                    {/* 스케줄 섹션 추가 */}
+                    {/* 스케줄 섹션 */}
                     <div>
                       <Label className="text-base font-semibold">공연 스케줄</Label>
                       <div className="grid grid-cols-2 gap-4 mt-2">
@@ -483,7 +487,7 @@ export default function AdminPage() {
                             id="vip-price"
                             value={formData.price.vip}
                             onChange={(e) => handlePriceChange("vip", e.target.value)}
-                            placeholder="예: 170,000원"
+                            placeholder="예: 170000"
                           />
                         </div>
                         <div>
@@ -492,7 +496,7 @@ export default function AdminPage() {
                             id="r-price"
                             value={formData.price.r}
                             onChange={(e) => handlePriceChange("r", e.target.value)}
-                            placeholder="예: 140,000원"
+                            placeholder="예: 140000"
                           />
                         </div>
                         <div>
@@ -501,7 +505,7 @@ export default function AdminPage() {
                             id="s-price"
                             value={formData.price.s}
                             onChange={(e) => handlePriceChange("s", e.target.value)}
-                            placeholder="예: 110,000원"
+                            placeholder="예: 110000"
                           />
                         </div>
                         <div>
@@ -510,7 +514,7 @@ export default function AdminPage() {
                             id="a-price"
                             value={formData.price.a}
                             onChange={(e) => handlePriceChange("a", e.target.value)}
-                            placeholder="예: 80,000원"
+                            placeholder="예: 80000"
                           />
                         </div>
                       </div>
@@ -615,10 +619,9 @@ export default function AdminPage() {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">모든 카테고리</SelectItem>
-                {categories.slice(1).map((category) => (
+                {categories.map((category) => (
                   <SelectItem key={category} value={category}>
-                    {category}
+                    {categoryLabels[category as keyof typeof categoryLabels]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -669,7 +672,9 @@ export default function AdminPage() {
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
                               <h3 className="text-xl font-semibold text-gray-800">{event.title}</h3>
-                              <Badge variant="secondary">{event.category}</Badge>
+                              <Badge variant="secondary">
+                                {categoryLabels[event.category as keyof typeof categoryLabels] || event.category}
+                              </Badge>
                               {!apiConnected && event.id > 1000000 && (
                                 <Badge className="bg-yellow-100 text-yellow-800 text-xs">로컬</Badge>
                               )}
@@ -689,7 +694,7 @@ export default function AdminPage() {
                                   <span className="font-medium">시간:</span> {event.runtime}
                                 </p>
                                 <p>
-                                  <span className="font-medium">연령:</span> {event.ageLimit}
+                                  <span className="font-medium">연령:</span> {event.ageLimit}세 이상
                                 </p>
                                 {event.schedule && (
                                   <p>

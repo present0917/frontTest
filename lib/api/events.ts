@@ -16,7 +16,6 @@ export interface EventRequest {
     a?: string
   }
   poster?: string
-  // 단일 객체로 변경
   schedule?: {
     showDate: string
     showTime: string
@@ -41,7 +40,6 @@ export interface EventResponse {
     a?: string
   }
   poster?: string
-  // 단일 객체로 변경
   schedule?: {
     showDate: string
     showTime: string
@@ -50,6 +48,28 @@ export interface EventResponse {
   reviewCount?: number
   createdAt?: string
   updatedAt?: string
+}
+
+export interface Schedule {
+  showDate: string
+  showTime: string
+}
+
+export interface ScheduleInfo {
+  scheduleId: number
+  schedule: Schedule
+}
+
+export interface EventDetailResponse {
+  eventId: number
+  title: string
+  venue: string
+  description: string
+  startDate: string
+  endDate: string
+  ageLimit: number
+  posterUrl: string
+  schedules: ScheduleInfo[]
 }
 
 const API_BASE_URL = "http://localhost:8080/api/v1"
@@ -92,6 +112,30 @@ export async function getAllEvents(): Promise<EventResponse[]> {
     console.error("Failed to fetch events from API")
     throw error
   }
+}
+
+export async function getDistinctEventsByCategory(category: string): Promise<EventResponse[]> {
+  try {
+    const categoryParam = category.toUpperCase()
+    return await apiCall<EventResponse[]>(`/event?category=${categoryParam}`)
+  } catch (error) {
+    console.error(`Failed to fetch distinct events by category ${category} from API`)
+    throw error
+  }
+}
+
+export async function getEventDetail(id: number): Promise<EventDetailResponse> {
+  try {
+    return await apiCall<EventDetailResponse>(`/event/${id}`)
+  } catch (error) {
+    console.error(`Failed to fetch event detail ${id} from API`)
+    throw error
+  }
+}
+
+// 기존 호환성을 위한 함수들
+export async function getEventsByCategory(category: string): Promise<EventResponse[]> {
+  return getDistinctEventsByCategory(category)
 }
 
 export async function getEventById(id: number): Promise<EventResponse> {

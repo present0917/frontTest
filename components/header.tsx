@@ -180,20 +180,8 @@ export default function Header() {
             <Link href="/contents/genre/concert" className="text-gray-600 hover:text-gray-900 whitespace-nowrap">
               콘서트
             </Link>
-            <Link href="/contents/genre/exhibition" className="text-gray-600 hover:text-gray-900 whitespace-nowrap">
-              전시/행사
-            </Link>
-            <Link href="/contents/genre/classic" className="text-gray-600 hover:text-gray-900 whitespace-nowrap">
-              클래식/무용
-            </Link>
-            <Link href="/contents/genre/family" className="text-gray-600 hover:text-gray-900 whitespace-nowrap">
-              아동/가족
-            </Link>
             <Link href="/contents/genre/theater" className="text-gray-600 hover:text-gray-900 whitespace-nowrap">
               연극
-            </Link>
-            <Link href="/contents/genre/upcoming" className="text-blue-600 hover:text-blue-700 whitespace-nowrap">
-              오픈예정
             </Link>
             <Link
               href="/contents/ranking?genre=MUSICAL"
