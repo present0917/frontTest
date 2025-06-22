@@ -15,6 +15,22 @@ export interface EventRequest {
   ageLimit: number
 }
 
+export interface EventUpdateRequest {
+  title: string
+  venue: string
+  description: string
+  posterImageUrl?: string
+  startDate: string
+  endDate: string
+  schedule?: {
+    showDate: string
+    showTime: string
+  }
+  eventCategory: string
+  runtime: number
+  ageLimit: number
+}
+
 export interface EventResponse {
   id: number
   title: string
